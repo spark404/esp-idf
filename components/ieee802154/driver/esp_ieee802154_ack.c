@@ -20,6 +20,8 @@ static ieee802154_pending_table_t ieee802154_pending_table;
 #define BIT_CLR(mask, pos) ((mask) &= ~(1UL << (pos)))
 #define BIT_IST(mask, pos) ((mask) & (1UL << (pos)))
 
+#define TAG "ieee802154_pending"
+
 static IRAM_ATTR bool ieee802154_addr_in_pending_table(const uint8_t *addr, bool is_short)
 {
     bool ret = false;
@@ -45,6 +47,7 @@ static IRAM_ATTR bool ieee802154_addr_in_pending_table(const uint8_t *addr, bool
 
 esp_err_t ieee802154_add_pending_addr(const uint8_t *addr, bool is_short)
 {
+    ESP_EARLY_LOGI(TAG, "ieee802154_add_pending_addr");
     esp_err_t ret = ESP_FAIL;
     int8_t first_empty_index = -1;
     if (is_short) {
@@ -84,6 +87,7 @@ esp_err_t ieee802154_add_pending_addr(const uint8_t *addr, bool is_short)
 
 esp_err_t ieee802154_clear_pending_addr(const uint8_t *addr, bool is_short)
 {
+    ESP_EARLY_LOGI(TAG, "ieee802154_clear_pending_addr");
     esp_err_t ret = ESP_FAIL;
     // Consider this function may be called in ISR, only clear the mask bits for finishing the process quickly.
     if (is_short) {
@@ -111,6 +115,7 @@ esp_err_t ieee802154_clear_pending_addr(const uint8_t *addr, bool is_short)
 
 void ieee802154_reset_pending_table(bool is_short)
 {
+    ESP_EARLY_LOGI(TAG, "ieee802154_reset_pending_table");
     // Consider this function may be called in ISR, only clear the mask bits for finishing the process quickly.
     if (is_short) {
         ieee802154_pending_table.short_addr_mask = 0;
@@ -121,6 +126,7 @@ void ieee802154_reset_pending_table(bool is_short)
 
 bool ieee802154_ack_config_pending_bit(const uint8_t *frame)
 {
+    ESP_EARLY_LOGI(TAG, "ieee802154_ack_config_pending_bit");
     bool pending_bit = false;
     uint8_t addr[IEEE802154_FRAME_EXT_ADDR_SIZE] = {0};
     uint8_t src_mode = 0;

@@ -26,6 +26,7 @@
 #include "esp_attr.h"
 
 #define CCA_DETECTION_TIME 8
+#define TAG "ieee802154_dev"
 
 extern void bt_bb_set_zb_tx_on_delay(uint16_t time);
 
@@ -78,6 +79,7 @@ uint8_t ieee802154_get_recent_lqi(void)
 
 static void set_next_rx_buffer(void)
 {
+    ESP_EARLY_LOGI(TAG, "set_next_rx_buffer");
     if (s_rx_frame[s_rx_index][0] != 0) {
         s_rx_index++;
         if (s_rx_index == CONFIG_IEEE802154_RX_BUFFER_SIZE) {
@@ -91,6 +93,7 @@ static void set_next_rx_buffer(void)
 
 static bool stop_rx(void)
 {
+    ESP_EARLY_LOGI(TAG, "stop_rx");
     ieee802154_ll_events events;
 
     ieee802154_ll_set_cmd(IEEE802154_CMD_STOP);
@@ -107,6 +110,7 @@ static bool stop_rx(void)
 
 static bool stop_tx_ack(void)
 {
+    ESP_EARLY_LOGI(TAG, "stop_tx_ack");
     ieee802154_ll_set_cmd(IEEE802154_CMD_STOP);
 
     esp_ieee802154_receive_done((uint8_t *)s_rx_frame[s_rx_index], &s_rx_frame_info[s_rx_index]);
@@ -118,6 +122,7 @@ static bool stop_tx_ack(void)
 
 static bool stop_tx(void)
 {
+    ESP_EARLY_LOGI(TAG, "stop_tx");
     ieee802154_ll_events events;
 
     ieee802154_ll_set_cmd(IEEE802154_CMD_STOP);
@@ -142,6 +147,7 @@ static bool stop_tx(void)
 
 static bool stop_cca(void)
 {
+    ESP_EARLY_LOGI(TAG, "stop_cca");
     ieee802154_ll_set_cmd(IEEE802154_CMD_STOP);
     ieee802154_ll_clear_events(IEEE802154_EVENT_ED_DONE | IEEE802154_EVENT_RX_ABORT);
     return true;
@@ -149,6 +155,7 @@ static bool stop_cca(void)
 
 static bool stop_tx_cca(void)
 {
+    ESP_EARLY_LOGI(TAG, "stop_tx_ccaa");
     stop_tx(); // in case the transmission already started
     ieee802154_ll_clear_events(IEEE802154_EVENT_TX_ABORT);
     return true;
@@ -156,6 +163,7 @@ static bool stop_tx_cca(void)
 
 static bool stop_rx_ack(void)
 {
+    ESP_EARLY_LOGI(TAG, "stop_rx_ack");
     ieee802154_ll_events events;
 
     ieee802154_ll_set_cmd(IEEE802154_CMD_STOP);
@@ -178,6 +186,7 @@ static bool stop_rx_ack(void)
 
 static bool stop_ed(void)
 {
+    ESP_EARLY_LOGI(TAG, "stop_ed");
     ieee802154_ll_set_cmd(IEEE802154_CMD_STOP);
 
     ieee802154_ll_clear_events(IEEE802154_EVENT_ED_DONE | IEEE802154_EVENT_RX_ABORT);
@@ -187,6 +196,7 @@ static bool stop_ed(void)
 
 static bool stop_current_operation(void)
 {
+    ESP_EARLY_LOGI(TAG, "stop_current_operation");
     event_end_process();
     switch (s_ieee802154_state) {
     case IEEE802154_STATE_DISABLE:
@@ -234,6 +244,7 @@ static bool stop_current_operation(void)
 
 static void enable_rx(void)
 {
+    ESP_EARLY_LOGI(TAG, "enable_rx");
     set_next_rx_buffer();
     IEEE802154_SET_TXRX_PTI(IEEE802154_SCENE_RX);
 
@@ -244,6 +255,7 @@ static void enable_rx(void)
 
 static IRAM_ATTR void next_operation(void)
 {
+    ESP_EARLY_LOGI(TAG, "next_operation");
     if (ieee802154_pib_get_rx_when_idle()) {
         enable_rx();
     } else {
@@ -253,6 +265,7 @@ static IRAM_ATTR void next_operation(void)
 
 static void isr_handle_timer0_done(void)
 {
+    ESP_EARLY_LOGI(TAG, "isr_handle_timer0_done");
     if (s_ieee802154_state == IEEE802154_STATE_RX_ACK) {
         esp_ieee802154_transmit_failed(s_tx_frame, ESP_IEEE802154_TX_ERR_NO_ACK);
         next_operation();
@@ -261,11 +274,13 @@ static void isr_handle_timer0_done(void)
 
 static void isr_handle_timer1_done(void)
 {
+    ESP_EARLY_LOGI(TAG, "isr_handle_timer1_done");
     // timer 1 is now unused.
 }
 
 static IRAM_ATTR void isr_handle_tx_done(void)
 {
+    ESP_EARLY_LOGI(TAG, "isr_handle_tx_done");
     event_end_process();
     if (s_ieee802154_state == IEEE802154_STATE_TX_ENH_ACK) {
         esp_ieee802154_receive_done((uint8_t *)s_rx_frame[s_rx_index], &s_rx_frame_info[s_rx_index]);
@@ -288,6 +303,7 @@ static IRAM_ATTR void isr_handle_tx_done(void)
 
 static IRAM_ATTR void isr_handle_rx_done(void)
 {
+    ESP_EARLY_LOGI(TAG, "isr_handle_rx_done");
     event_end_process();
     ieee802154_rx_frame_info_update();
 
@@ -323,12 +339,14 @@ static IRAM_ATTR void isr_handle_rx_done(void)
 
 static IRAM_ATTR void isr_handle_ack_tx_done(void)
 {
+    ESP_EARLY_LOGI(TAG, "isr_handle_ack_tx_done");
     esp_ieee802154_receive_done((uint8_t *)s_rx_frame[s_rx_index], &s_rx_frame_info[s_rx_index]);
     next_operation();
 }
 
 static IRAM_ATTR void isr_handle_ack_rx_done(void)
 {
+    ESP_EARLY_LOGI(TAG, "isr_handle_ack_rx_done");
     ieee802154_timer0_stop();
     ieee802154_ll_disable_events(IEEE802154_EVENT_TIMER0_OVERFLOW);
     ieee802154_rx_frame_info_update();
@@ -338,6 +356,7 @@ static IRAM_ATTR void isr_handle_ack_rx_done(void)
 
 static IRAM_ATTR void isr_handle_rx_abort(void)
 {
+    ESP_EARLY_LOGI(TAG, "isr_handle_rx_abort");
     event_end_process();
     uint32_t rx_status = ieee802154_ll_get_rx_status();
     ieee802154_ll_rx_abort_reason_t rx_abort_reason = ieee802154_ll_get_rx_abort_reason();
@@ -384,6 +403,7 @@ static IRAM_ATTR void isr_handle_rx_abort(void)
 
 static IRAM_ATTR void isr_handle_tx_abort(void)
 {
+    ESP_EARLY_LOGI(TAG, "isr_handle_tx_abort");
     event_end_process();
     ieee802154_ll_tx_abort_reason_t tx_abort_reason = ieee802154_ll_get_tx_abort_reason();
     switch (tx_abort_reason) {
@@ -436,6 +456,7 @@ static IRAM_ATTR void isr_handle_tx_abort(void)
 
 static IRAM_ATTR void isr_handle_ed_done(void)
 {
+    ESP_EARLY_LOGI(TAG, "isr_handle_ed_done");
     if (s_ieee802154_state == IEEE802154_STATE_CCA) {
         esp_ieee802154_cca_done(ieee802154_ll_is_cca_busy());
     } else if (s_ieee802154_state == IEEE802154_STATE_ED) {
@@ -450,6 +471,8 @@ static void ieee802154_isr(void *arg)
     ieee802154_ll_events events = ieee802154_ll_get_events();
 
     ieee802154_ll_clear_events(events);
+
+    ESP_EARLY_LOGI(IEEE802154_TAG, "Trigger ieee802154_isr, %d", events);
 
     if (events & IEEE802154_EVENT_RX_SFD_DONE) {
         // IEEE802154_STATE_TX && IEEE802154_STATE_TX_CCA && IEEE802154_STATE_TX_ENH_ACK for isr processing delay
@@ -554,16 +577,19 @@ static IRAM_ATTR void ieee802154_exit_critical(void)
 
 void ieee802154_enable(void)
 {
+    ESP_EARLY_LOGI(TAG, "ieee802154_enable");
     modem_clock_module_enable(ieee802154_periph.module);
 }
 
 void ieee802154_disable(void)
 {
+    ESP_EARLY_LOGI(TAG, "ieee802154_disable");
     s_ieee802154_state = IEEE802154_STATE_DISABLE;
 }
 
 esp_err_t ieee802154_mac_init(void)
 {
+    ESP_EARLY_LOGI(TAG, "ieee802154_mac_init");
     esp_err_t ret = ESP_OK;
     ieee802154_pib_init();
 
@@ -600,6 +626,7 @@ esp_err_t ieee802154_mac_init(void)
 
 static void start_ed(uint32_t duration)
 {
+    ESP_EARLY_LOGI(TAG, "start_ed");
     ieee802154_ll_enable_events(IEEE802154_EVENT_ED_DONE);
     ieee802154_ll_set_ed_duration(duration);
     ieee802154_ll_set_cmd(IEEE802154_CMD_ED_START);
@@ -607,6 +634,7 @@ static void start_ed(uint32_t duration)
 
 static void tx_init(const uint8_t *frame)
 {
+    ESP_EARLY_LOGI(TAG, "tx_init");
     s_tx_frame = (uint8_t *)frame;
     stop_current_operation();
     ieee802154_pib_update();
@@ -622,6 +650,7 @@ static void tx_init(const uint8_t *frame)
 
 esp_err_t ieee802154_transmit(const uint8_t *frame, bool cca)
 {
+    ESP_EARLY_LOGI(TAG, "ieee802154_transmit");
     ieee802154_enter_critical();
     tx_init(frame);
 
@@ -647,6 +676,7 @@ static inline bool is_target_time_expired(uint32_t target, uint32_t now)
 
 esp_err_t ieee802154_transmit_at(const uint8_t *frame, bool cca, uint32_t time)
 {
+    ESP_EARLY_LOGI(TAG, "ieee802154_transmit_at");
     uint32_t tx_target_time;
     uint32_t current_time;
     tx_init(frame);
@@ -680,12 +710,14 @@ esp_err_t ieee802154_transmit_at(const uint8_t *frame, bool cca, uint32_t time)
 
 static void rx_init(void)
 {
+    ESP_EARLY_LOGI(TAG, "rx_init");
     stop_current_operation();
     ieee802154_pib_update();
 }
 
 esp_err_t ieee802154_receive(void)
 {
+    ESP_EARLY_LOGI(TAG, "ieee802154_receive");
     if (((s_ieee802154_state == IEEE802154_STATE_RX) || (s_ieee802154_state == IEEE802154_STATE_TX_ACK)) && (!ieee802154_pib_is_pending())) {
         // already in rx state, don't abort current rx operation
         return ESP_OK;
@@ -700,6 +732,7 @@ esp_err_t ieee802154_receive(void)
 
 esp_err_t ieee802154_receive_at(uint32_t time)
 {
+    ESP_EARLY_LOGI(TAG, "ieee802154_receive_at");
     uint32_t rx_target_time = time - IEEE802154_RX_RAMPUP_TIME_US;
     uint32_t current_time;
 
@@ -718,6 +751,7 @@ esp_err_t ieee802154_receive_at(uint32_t time)
 
 esp_err_t ieee802154_sleep(void)
 {
+    ESP_EARLY_LOGI(TAG, "ieee802154_sleep");
     ieee802154_enter_critical();
 
     stop_current_operation();
@@ -729,6 +763,7 @@ esp_err_t ieee802154_sleep(void)
 
 esp_err_t ieee802154_energy_detect(uint32_t duration)
 {
+    ESP_EARLY_LOGI(TAG, "ieee802154_energy_detect");
     ieee802154_enter_critical();
 
     stop_current_operation();
@@ -744,6 +779,7 @@ esp_err_t ieee802154_energy_detect(uint32_t duration)
 
 esp_err_t ieee802154_cca(void)
 {
+    ESP_EARLY_LOGI(TAG, "ieee802154_cca");
     ieee802154_enter_critical();
 
     stop_current_operation();
@@ -759,5 +795,6 @@ esp_err_t ieee802154_cca(void)
 
 ieee802154_state_t ieee802154_get_state(void)
 {
+    ESP_EARLY_LOGI(TAG, "ieee802154_get_state");
     return s_ieee802154_state;
 }

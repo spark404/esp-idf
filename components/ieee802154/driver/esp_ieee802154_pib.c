@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 #include <string.h>
+#include "esp_log.h"
 #include "hal/ieee802154_ll.h"
 #include "esp_ieee802154_pib.h"
 #include "esp_ieee802154_util.h"
@@ -60,7 +61,9 @@ static uint8_t ieee802154_txpower_convert(int8_t txpower)
 
 void ieee802154_pib_update(void)
 {
+    ESP_EARLY_LOGI("ieee802154", "ieee802154_pib_update");
     if (ieee802154_pib_is_pending()) {
+        ESP_EARLY_LOGI("ieee802154", "ieee802154_pib_update is pending, p=%d, pend=%d", s_ieee802154_pib.promiscuous, s_ieee802154_pib.pending_mode);
         ieee802154_ll_set_freq(ieee802154_channel_to_freq(s_ieee802154_pib.channel));
         ieee802154_ll_set_power(ieee802154_txpower_convert(s_ieee802154_pib.txpower));
 

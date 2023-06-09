@@ -20,7 +20,6 @@
 
 esp_err_t esp_ieee802154_enable(void)
 {
-
     ieee802154_enable();
     esp_phy_enable();
     esp_btbb_enable();
@@ -187,6 +186,7 @@ uint16_t esp_ieee802154_get_panid(void)
 
 esp_err_t esp_ieee802154_set_panid(uint16_t panid)
 {
+    ESP_EARLY_LOGI("ieee180154", "set pan id %04x", panid);
     ieee802154_ll_set_multipan_panid(ESP_IEEE802154_MULTIPAN_0, panid);
     return ESP_OK;
 }
@@ -198,6 +198,7 @@ uint16_t esp_ieee802154_get_short_address(void)
 
 esp_err_t esp_ieee802154_set_short_address(uint16_t short_address)
 {
+    ESP_EARLY_LOGI("ieee180154", "set short address %04x", short_address);
     ieee802154_ll_set_multipan_short_addr(ESP_IEEE802154_MULTIPAN_0, short_address);
     return ESP_OK;
 }
@@ -210,6 +211,8 @@ esp_err_t esp_ieee802154_get_extended_address(uint8_t *ext_addr)
 
 esp_err_t esp_ieee802154_set_extended_address(const uint8_t *ext_addr)
 {
+    ESP_EARLY_LOGI("ieee180154", "set extended address %02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x",
+                   *ext_addr, *(ext_addr+1), *(ext_addr+2), *(ext_addr+3), *(ext_addr+4), *(ext_addr+5), *(ext_addr+6), *(ext_addr+7));
     ieee802154_ll_set_multipan_ext_addr(ESP_IEEE802154_MULTIPAN_0, ext_addr);
     return ESP_OK;
 }
